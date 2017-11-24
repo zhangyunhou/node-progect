@@ -82,57 +82,57 @@ router.get('/', (req, res, next) => {
     });
   })
   //添加照片
-  .post('/addPic',(req,res,next)=>{
+  .post('/addPic', (req, res, next) => {
     var form = new formidable.IncomingForm();
-    
 
-    let rootPath = path.join(__dirname,'resource');
+
+    let rootPath = path.join(__dirname, 'resource');
     //设置默认上传目录
     form.uploadDir = rootPath;
-    form.parse(req, function(err, fields, files) {
-        if(err) return next(err);
+    form.parse(req, function (err, fields, files) {
+      if (err) return next(err);
 
-        //移动文件
-        // console.log(fields); //将字符串数据封装成对象 { dir: 'love' }
-        //通过移动resource下的资源到指定文件夹目录
-        // fse.move(rootPath)
-        // console.log(path.parse(files.pic.path).base);
-        // console.log(files); // 是一个对象.pic也是一个对象
-        
-        let filename = path.parse(files.pic.path).base;
-        // console.log(files.pic.path);
-        //移动文件            resource  e       名称
-        let dist = path.join(rootPath,fields.dir,filename);
-        fse.move(files.pic.path,dist,(err)=>{
-                if(err) return next(err);
-                // console.log('移动成功');
+      //移动文件
+      // console.log(fields); //将字符串数据封装成对象 { dir: 'love' }
+      //通过移动resource下的资源到指定文件夹目录
+      // fse.move(rootPath)
+      // console.log(path.parse(files.pic.path).base);
+      // console.log(files); // 是一个对象.pic也是一个对象
 
-                //将数据保存进数据库
-                //file:/resource/vvvb/upload_dd10f264c02f08e9031a0bd3f7eb090a
-                let db_file = `/resource/${fields.dir}/${filename}`;
-                let db_dir = fields.dir;
+      let filename = path.parse(files.pic.path).base;
+      // console.log(files.pic.path);
+      //移动文件            resource  e       名称
+      let dist = path.join(rootPath, fields.dir, filename);
+      fse.move(files.pic.path, dist, (err) => {
+        if (err) return next(err);
+        // console.log('移动成功');
 
-                pool.getConnection((err, connection)=> {
-                    //处理获取连接时的异常，比如停网了
-                    if(err) return next(err);
-                    //使用连接查询所有的album_dir所有数据
-                    connection.query('insert into album_file values (?,?)',[db_file,db_dir],(error, results)=>{
+        //将数据保存进数据库
+        //file:/resource/vvvb/upload_dd10f264c02f08e9031a0bd3f7eb090a
+        let db_file = `/resource/${fields.dir}/${filename}`;
+        let db_dir = fields.dir;
 
-                        //查询完毕以后，释放连接
-                        connection.release();
-                        //处理查询时带来的异常，比如表名错误
-                        if(err) return next(err);
-                        //重定向到看相片的页面
-                        res.redirect('/showDir?dir='+ db_dir);
-                    })
-                });
+        pool.getConnection((err, connection) => {
+          //处理获取连接时的异常，比如停网了
+          if (err) return next(err);
+          //使用连接查询所有的album_dir所有数据
+          connection.query('insert into album_file values (?,?)', [db_file, db_dir], (error, results) => {
+
+            //查询完毕以后，释放连接
+            connection.release();
+            //处理查询时带来的异常，比如表名错误
+            if (err) return next(err);
+            //重定向到看相片的页面
+            res.redirect('/showDir?dir=' + db_dir);
+          })
         });
+      });
     });
-})
+  })
 // /public/vender/bootstrap/js/bootstrap.js
-app.use('/public',express.static('./public'));
+app.use('/public', express.static('./public'));
 //向外暴露相片静态资源目录
-app.use('/resource',express.static('./resource'));
+app.use('/resource', express.static('./resource'));
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
