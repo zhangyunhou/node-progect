@@ -61,8 +61,8 @@
                             <td>{{$value.title}}</td>
                             <td>{{$value.singer}}</td>
                             <td>{{$value.time}}</td>
-                            <td><a href="">编辑</a></td>
-                            <td><a class="del" href="">删除</a></td>
+                            <td><a href="/music/edit-music/{{$value.id}}">编辑</a></td>
+                            <td><a class="del" href="/api/del-music?id={{$value.id}}">删除</a></td>
                             <td><span style="cursor:pointer" src="" file="{{$value.file}}" filelrc="{{$value.filelrc}}" class="glyphicon glyphicon-play-circle ply"></span></td>
                         </tr>
                        {{/each}}
@@ -155,15 +155,38 @@
                     $('#audio').attr('src',file);
 
                 }
-            })
-
-            
-            
-
-              
+            });
+        });
 
 
-        })
+         //异步无刷新删除
+        $('.del').on('click',function(e){
+            e.preventDefault();
+            var url = $(this).attr('href');
+            var aTag = this;
+            // alert(url);
+
+            //问问
+            if(confirm('亲，如此好听的歌曲，您确定要删除吗？求你了..')){
+                //发起ajax
+                $.ajax({
+                    url:url,
+                    type:'delete',
+                    dataType:'json',
+                    success:function(data){
+                        if(data.code == '001'){
+                            //删除成功，删除一个DOM
+                            var tr = aTag.parentNode.parentNode;
+                            tr.parentNode.removeChild(tr);
+                        }else{
+                            //删除失败，重新请求数据
+                            location.href = '/music/list-music';
+                        }
+                    }
+                })
+            }
+
+        });
     </script>
 
 </body>

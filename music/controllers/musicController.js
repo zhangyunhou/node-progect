@@ -166,3 +166,32 @@ exports.showListMusic = (req,res,next)=>{
         })
     })
 }
+
+/**
+ * [显示编辑]
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
+exports.showEdit = (req,res,next)=>{
+    //1:url上的path方式参数接收
+    let musicId = req.params.id;
+    // console.log(musicId);
+    //2: 查询数据库
+    db.q('select * from musics where id = ?',[musicId],(err,musics)=>{
+        //判断是否有这个歌曲
+        if(musics.length == 0){
+            return res.json({
+                code:'001',
+                msg:'没有该歌曲'
+            });
+        }
+
+        //将数据与页面渲染到客户端
+        res.render('edit.html',{
+            music:musics[0]
+        })
+
+    })
+}
